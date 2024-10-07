@@ -9,7 +9,7 @@ from rest_framework import status
 @api_view(http_method_names=['GET'])
 def post_list_api_view(request):
     #step 1: Collect  (QuerySet)
-    post = Post.objects.all()
+    post = Post.objects.select_related('category').prefetch_related('search_word', 'comments').all()
 
     #step 2: Reformat posts to list of Dictionaries (json)
     data = PostSerializer(instance=post, many=True).data
