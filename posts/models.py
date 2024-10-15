@@ -20,8 +20,10 @@ class SearchWord(AbsrtactModel):
 class Post(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, null=True)
     search_word = models.ManyToManyField(SearchWord, blank=True)
+
     title = models.CharField(max_length=255)
     text = models.TextField(null = True)
+
     is_active= models.BooleanField(default=True, null = True)
     view_count = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)

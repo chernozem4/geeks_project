@@ -1,9 +1,10 @@
+from django.db.migrations import serializer
 from django.shortcuts import render
 from django.template.defaultfilters import title
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from posts.models import Post
-from posts.serializers import PostSerializer
+from posts.serializers import PostSerializer, PostValidateSerializer
 from rest_framework import status
 
 @api_view(http_method_names=['GET', 'POST'])
@@ -32,12 +33,16 @@ def post_list_create_api_view(request):
         #step 3: Return response as JSON
         return Response(data = data)
     elif request.method == 'POST':
-        title = request.data.get('title')
-        text = request.data.get('text')
-        is_active = request.data.get('is_active')
-        view_count = request.data.get('view_count')
-        category_id = request.data.get('category_id')
-        search_word = request.data.get('search_word')
+        #step 0: validation of data(existing, typing)
+        serializer = PostValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        title = serializer.data.get('title') #None
+        text = serializer.data.get('text')
+        is_active = serializer.data.get('is_active')
+        view_count = serializer.data.get('view_count')
+        category_id = serializer.data.get('category_id')
+        search_word = serializer.data.get('search_word')
 
         post = Post.objects.create(
             title=title,
@@ -71,13 +76,13 @@ def post_detail_api_view(request, id):
         return Response(data=data)
 
     elif request.method == 'PUT':
-        post.title = request.data.get('title')
-        post.text = request.data.get('text')
-        post.is_active = request.data.get('is_active')
-        post.view_count = request.data.get('view_count')
-        post.category_id = request.data.get('category_id')
+        post.title = serializer.data.get('title')
+        post.text = serializer.data.get('text')
+        post.is_active = serializer.data.get('is_active')
+        post.view_count = serializer.data.get('view_count')
+        post.category_id = serializer.data.get('category_id')
 
-        post.search_word.set(request.data.get('search_word'))
+        post.search_word.set(serializer.data.get('search_word'))
         post.save()
         return Response(data=PostSerializer(post).data,
                         status=status.HTTP_201_CREATED)
